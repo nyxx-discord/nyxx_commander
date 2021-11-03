@@ -1,9 +1,9 @@
 import "package:nyxx/nyxx.dart";
-import "package:nyxx_commander/commander.dart";
+import "package:nyxx_commander/nyxx_commander.dart";
 
 void main() {
   // Start bot
-  final bot = Nyxx("TOKEN", GatewayIntents.allUnprivileged);
+  final bot = NyxxFactory.createNyxxWebsocket("TOKEN", GatewayIntents.allUnprivileged);
 
   // Start commander with prefix `!`
   Commander(bot, prefix: "!")

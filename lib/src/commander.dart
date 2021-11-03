@@ -1,25 +1,12 @@
-part of nyxx_commander;
+import 'dart:async';
+import 'dart:io';
 
-/// Used to determine if command can be executed in given environment.
-/// Return true to allow executing command or false otherwise.
-typedef PassHandlerFunction = FutureOr<bool> Function(CommandContext context);
+import 'package:logging/logging.dart';
+import 'package:nyxx/nyxx.dart';
 
-/// Handler for executing command logic.
-typedef CommandHandlerFunction = FutureOr<void> Function(CommandContext context, String message);
-
-/// Handler for executing logic after executing command.
-typedef AfterHandlerFunction = FutureOr<void> Function(CommandContext context);
-
-/// Handler used to determine prefix for command in given environment.
-/// Can be used to define different prefixes for different guild, users or dms.
-/// Return String containing prefix or null if command cannot be executed.
-typedef PrefixHandlerFunction = FutureOr<String?> Function(Message message);
-
-/// Callback to customize logger output when command is executed.
-typedef LoggerHandlerFunction = FutureOr<void> Function(CommandContext context, String commandName, Logger logger);
-
-/// Callback called when command executions returns with [Exception] or [Error] ([exception] variable could be either).
-typedef CommandExecutionError = FutureOr<void> Function(CommandContext context, dynamic exception);
+import 'package:nyxx_commander/src/command_handler.dart';
+import 'package:nyxx_commander/src/command_context.dart';
+import 'package:nyxx_commander/src/utils.dart';
 
 /// Lightweight command framework. Doesn't use `dart:mirrors` and can be used in browser.
 /// While constructing specify prefix which is string with prefix or
@@ -28,7 +15,7 @@ typedef CommandExecutionError = FutureOr<void> Function(CommandContext context, 
 /// Allows to specify callbacks which are executed before and after command - also on per command basis.
 /// beforeCommandHandler callbacks are executed only command exists and is matched with message content.
 // ignore: prefer_mixin
-class Commander with ICommandRegistrable {
+class Commander with CommandRegistrableAbstract {
   late final PrefixHandlerFunction _prefixHandler;
   late final PassHandlerFunction? _beforeCommandHandler;
   late final AfterHandlerFunction? _afterHandlerFunction;
@@ -36,21 +23,18 @@ class Commander with ICommandRegistrable {
   late final CommandExecutionError? _commandExecutionError;
 
   @override
-  final List<CommandEntity> _commandEntities = [];
+  final List<ICommandEntity> commandEntities = [];
 
   final Logger _logger = Logger("Commander");
 
   /// Resolves prefix for given [message]. Returns null if there is no prefix for given [message] which
   /// means command wouldn't execute in given context.
-  FutureOr<String?> getPrefixForMessage(Message message) => _prefixHandler(message);
-
-  /// Returns unmodifiable list of registered commands.
-  List<CommandEntity> get commands => List.unmodifiable(this._commandEntities);
+  FutureOr<String?> getPrefixForMessage(IMessage message) => _prefixHandler(message);
 
   /// Either [prefix] or [prefixHandler] must be specified otherwise program will exit.
   /// Allows to specify additional [beforeCommandHandler] executed before main command callback,
   /// and [afterCommandHandler] executed after main command callback.
-  Commander(Nyxx client,
+  Commander(INyxxWebsocket client,
         {String? prefix,
         PrefixHandlerFunction? prefixHandler,
         PassHandlerFunction? beforeCommandHandler,
@@ -78,7 +62,7 @@ class Commander with ICommandRegistrable {
     this._commandExecutionError = commandExecutionError;
     this._loggerHandlerFunction = loggerHandlerFunction ?? _defaultLogger;
 
-    client.onMessageReceived.listen(_handleMessage);
+    client.eventsWs.onMessageReceived.listen(_handleMessage);
 
     this._logger.info("Commander ready!");
   }
@@ -91,7 +75,7 @@ class Commander with ICommandRegistrable {
   /// Registers command as implemented [CommandEntity] class
   void registerCommandGroup(CommandGroup commandGroup) => this.registerCommandEntity(commandGroup);
 
-  Future<void> _handleMessage(MessageReceivedEvent event) async {
+  Future<void> _handleMessage(IMessageReceivedEvent event) async {
     final prefix = await _prefixHandler(event.message);
     if (prefix == null) {
       return;
@@ -104,7 +88,7 @@ class Commander with ICommandRegistrable {
     this._logger.finer("Attempting to execute command from message: [${event.message.content}] from [${event.message.author.tag}]");
 
     // Find matching command with given message content
-    final matchingCommand = _CommandMatcher._findMatchingCommand(event.message.content.toLowerCase().replaceFirst(prefix, "").trim().split(" "), _commandEntities) as CommandHandler?;
+    final matchingCommand = CommandMatcher.findMatchingCommand(event.message.content.toLowerCase().replaceFirst(prefix, "").trim().split(" "), commandEntities) as ICommandHandler?;
 
     if(matchingCommand == null) {
       return;
@@ -121,10 +105,10 @@ class Commander with ICommandRegistrable {
     this._logger.finer("Preparing command for execution: Command name: $finalCommand");
 
     // construct CommandContext
-    final context = CommandContext._new(
+    final context = CommandContext(
       await event.message.channel.getOrDownload(),
       event.message.author,
-      event.message is GuildMessage ? (event.message as GuildMessage).guild.getFromCache()! : null,
+      event.message.guild?.getFromCache(),
       event.message,
       "$prefix$finalCommand",
     );
@@ -169,7 +153,7 @@ class Commander with ICommandRegistrable {
   }
 
   // Invokes command after handler and its parents
-  Future<void> _invokeAfterHandler(CommandEntity? commandEntity, CommandContext context) async {
+  Future<void> _invokeAfterHandler(ICommandEntity? commandEntity, CommandContext context) async {
     if(commandEntity == null) {
       return;
     }
@@ -184,7 +168,7 @@ class Commander with ICommandRegistrable {
   }
 
   // Invokes command before handler and its parents. It will check for next before handlers if top handler returns true.
-  Future<bool> _invokeBeforeHandler(CommandEntity? commandEntity, CommandContext context) async {
+  Future<bool> _invokeBeforeHandler(ICommandEntity? commandEntity, CommandContext context) async {
     if(commandEntity == null) {
       return true;
     }
@@ -200,31 +184,13 @@ class Commander with ICommandRegistrable {
     return false;
   }
 
-  FutureOr<void> _defaultLogger(CommandContext ctx, String commandName, Logger logger) {
+  FutureOr<void> _defaultLogger(ICommandContext ctx, String commandName, Logger logger) {
     logger.info("Command [$commandName] executed by [${ctx.author.tag}]");
   }
 
-  bool _hasRequiredIntents(Nyxx client) =>
+  bool _hasRequiredIntents(INyxxWebsocket client) =>
       PermissionsUtils.isApplied(client.intents, GatewayIntents.guildMessages)
           || PermissionsUtils.isApplied(client.intents, GatewayIntents.directMessages)
           || PermissionsUtils.isApplied(client.intents, GatewayIntents.guilds)
           || PermissionsUtils.isApplied(client.intents, GatewayIntents.guilds);
-}
-
-/// Provides common functionality for entities which can register subcommand or sub command groups.
-abstract class ICommandRegistrable {
-  List<CommandEntity> get _commandEntities;
-
-  /// Registers [CommandEntity] within context of this instance. Throws error if there is command with same name as provided.
-  void registerCommandEntity(CommandEntity entity) {
-    if (this._commandEntities.any((element) => element.isEntityName(entity.name) )) {
-      throw Exception("Command name should be unique! There is already command with name: ${entity.name}}");
-    }
-
-    if (entity is CommandGroup && entity.name.isEmpty && entity.aliases.isNotEmpty) {
-      throw Exception("Command group cannot have aliases if its name is empty! Provided aliases: [${entity.aliases.join(", ")}]");
-    }
-
-    this._commandEntities.add(entity);
-  }
 }
