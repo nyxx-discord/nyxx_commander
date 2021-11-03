@@ -159,10 +159,6 @@ class CommandContext implements ICommandContext {
   /// Creates na instance of [CommandContext]
   CommandContext(this.channel, this.author, this.guild, this.message, this.commandMatcher);
 
-  static final _argumentsRegex = RegExp('([^"\' ]+)|["\']([^"]*)["\']');
-  static final _quotedTextRegex = RegExp('["\']([^"]*)["\']');
-  static final _codeBlocksRegex = RegExp(r"```(\w+)?(\s)?(((.+)(\s)?)+)```");
-
   /// Creates inline reply for message
   @override
   Future<IMessage> reply(MessageBuilder builder, {bool mention = false, bool reply = false }) async {
@@ -297,7 +293,7 @@ class CommandContext implements ICommandContext {
   /// `List<String> [hi, this, is, example stuff, which, can be parsed]`
   @override
   Iterable<String> getArguments() sync* {
-    final matches = _argumentsRegex.allMatches(this.message.content.toLowerCase().replaceFirst(commandMatcher.toLowerCase(), ""));
+    final matches = argumentsRegex.allMatches(this.message.content.toLowerCase().replaceFirst(commandMatcher.toLowerCase(), ""));
 
     for(final match in matches) {
       final group1 = match.group(1);
@@ -311,7 +307,7 @@ class CommandContext implements ICommandContext {
   /// `List<String> [example stuff, can be parsed]`
   @override
   Iterable<String> getQuotedText() sync* {
-    final matches = _quotedTextRegex.allMatches(this.message.content.replaceFirst(commandMatcher, ""));
+    final matches = quotedTextRegex.allMatches(this.message.content.replaceFirst(commandMatcher, ""));
     for(final match in matches) {
       yield match.group(1)!;
     }
@@ -326,7 +322,7 @@ class CommandContext implements ICommandContext {
   /// """
   @override
   Iterable<String> getCodeBlocks() sync* {
-    final matches = _codeBlocksRegex.allMatches(message.content);
+    final matches = codeBlocksRegex.allMatches(message.content);
     for (final match in matches) {
       final matchedText = match.group(3);
 
