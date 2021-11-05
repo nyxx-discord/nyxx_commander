@@ -32,7 +32,7 @@ abstract class ICommandContext {
   String get commandMatcher;
 
   /// Creates inline reply for message
-  Future<IMessage> reply(MessageBuilder builder, {bool mention = false, bool reply = false });
+  Future<IMessage> reply(MessageBuilder builder, {bool mention = false, bool reply = false});
 
   /// Reply to message. It allows to send regular message, Embed or both.
   ///
@@ -140,9 +140,7 @@ class CommandContext implements ICommandContext {
 
   /// Returns author as guild member
   @override
-  IMember? get member => message.member != null
-      ? message.member!
-      : null;
+  IMember? get member => message.member != null ? message.member! : null;
 
   /// Reference to client
   @override
@@ -161,7 +159,7 @@ class CommandContext implements ICommandContext {
 
   /// Creates inline reply for message
   @override
-  Future<IMessage> reply(MessageBuilder builder, {bool mention = false, bool reply = false }) async {
+  Future<IMessage> reply(MessageBuilder builder, {bool mention = false, bool reply = false}) async {
     if (mention) {
       if (builder.allowedMentions != null) {
         builder.allowedMentions!.allow(reply: true);
@@ -195,11 +193,9 @@ class CommandContext implements ICommandContext {
   /// }
   /// ```
   @override
-  Future<IMessage> sendMessageTemp(Duration duration, MessageBuilder builder) => channel
-        .sendMessage(builder)
-        .then((msg) {
-          Timer(duration, () => msg.delete());
-          return msg;
+  Future<IMessage> sendMessageTemp(Duration duration, MessageBuilder builder) => channel.sendMessage(builder).then((msg) {
+        Timer(duration, () => msg.delete());
+        return msg;
       });
 
   /// Replies to message after delay specified with [duration]
@@ -209,13 +205,11 @@ class CommandContext implements ICommandContext {
   /// }
   /// ```
   @override
-  Future<IMessage> sendMessageDelayed(Duration duration, MessageBuilder builder) =>
-      Future.delayed(duration, () => channel.sendMessage(builder));
+  Future<IMessage> sendMessageDelayed(Duration duration, MessageBuilder builder) => Future.delayed(duration, () => channel.sendMessage(builder));
 
   /// Awaits for emoji under given [msg]
   @override
-  Future<IEmoji> awaitEmoji(IMessage msg) async =>
-      (await client.eventsWs.onMessageReactionAdded.where((event) => event.message == msg).first).emoji;
+  Future<IEmoji> awaitEmoji(IMessage msg) async => (await client.eventsWs.onMessageReactionAdded.where((event) => event.message == msg).first).emoji;
 
   /// Collects emojis within given [duration]. Returns empty map if no reaction received
   ///
@@ -227,7 +221,7 @@ class CommandContext implements ICommandContext {
   /// }
   /// ```
   @override
-  Future<Map<IEmoji, int>> awaitEmojis(IMessage msg, Duration duration){
+  Future<Map<IEmoji, int>> awaitEmojis(IMessage msg, Duration duration) {
     final collectedEmoji = <IEmoji, int>{};
     return Future<Map<IEmoji, int>>(() async {
       await for (final event in client.eventsWs.onMessageReactionAdded.where((evnt) => evnt.message != null && evnt.message!.id == msg.id)) {
@@ -248,7 +242,6 @@ class CommandContext implements ICommandContext {
     }).timeout(duration, onTimeout: () => collectedEmoji);
   }
 
-
   /// Waits for first [TypingEvent] and returns it. If timed out returns null.
   /// Can listen to specific user by specifying [user]
   @override
@@ -264,7 +257,7 @@ class CommandContext implements ICommandContext {
   /// ```
   @override
   Stream<IMessageReceivedEvent> nextMessagesWhere(bool Function(IMessageReceivedEvent msg) predicate, {int limit = 1}) =>
-    client.eventsWs.onMessageReceived.where((event) => event.message.channel.id == channel.id).where(predicate).take(limit);
+      client.eventsWs.onMessageReceived.where((event) => event.message.channel.id == channel.id).where(predicate).take(limit);
 
   /// Gets next [num] number of any messages sent within one context (same channel).
   ///
@@ -275,8 +268,7 @@ class CommandContext implements ICommandContext {
   /// }
   /// ```
   @override
-  Stream<IMessageReceivedEvent> nextMessages(int num) =>
-      client.eventsWs.onMessageReceived.where((event) => event.message.channel.id == channel.id).take(num);
+  Stream<IMessageReceivedEvent> nextMessages(int num) => client.eventsWs.onMessageReceived.where((event) => event.message.channel.id == channel.id).take(num);
 
   /// Starts typing loop and ends when [callback] resolves.
   @override
@@ -295,7 +287,7 @@ class CommandContext implements ICommandContext {
   Iterable<String> getArguments() sync* {
     final matches = argumentsRegex.allMatches(message.content.toLowerCase().replaceFirst(commandMatcher.toLowerCase(), ""));
 
-    for(final match in matches) {
+    for (final match in matches) {
       final group1 = match.group(1);
 
       yield group1 ?? match.group(2)!;
@@ -308,7 +300,7 @@ class CommandContext implements ICommandContext {
   @override
   Iterable<String> getQuotedText() sync* {
     final matches = quotedTextRegex.allMatches(message.content.replaceFirst(commandMatcher, ""));
-    for(final match in matches) {
+    for (final match in matches) {
       yield match.group(1)!;
     }
   }

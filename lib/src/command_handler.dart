@@ -15,7 +15,7 @@ abstract class CommandRegistrableAbstract implements ICommandRegistrable {
   /// Registers [CommandEntity] within context of this instance. Throws error if there is command with same name as provided.
   @override
   void registerCommandEntity(ICommandEntity entity) {
-    if (commandEntities.any((element) => element.isEntityName(entity.name) )) {
+    if (commandEntities.any((element) => element.isEntityName(entity.name))) {
       throw Exception("Command name should be unique! There is already command with name: ${entity.name}}");
     }
 
@@ -146,14 +146,12 @@ class CommandGroup extends CommandEntityAbstract with CommandRegistrableAbstract
   CommandGroup({this.name = "", this.aliases = const [], this.defaultHandler, this.beforeHandler, this.afterHandler, this.parent});
 
   /// Registers default command handler which will be executed if no subcommand is matched to message content
-  void registerDefaultCommand(CommandHandlerFunction commandHandler,
-      {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
+  void registerDefaultCommand(CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
     defaultHandler = BasicCommandHandler("", commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this);
   }
 
   /// Registers subcommand
-  void registerSubCommand(String name, CommandHandlerFunction commandHandler,
-      {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
+  void registerSubCommand(String name, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
     registerCommandEntity(BasicCommandHandler(name, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this));
   }
 
@@ -169,13 +167,9 @@ abstract class ICommandHandler implements ICommandEntity {
 /// Handles command execution - requires to implement [name] field which
 /// returns name of command to match message content, and [commandHandler] callback
 /// which is fired when command matches message content.
-abstract class CommandHandlerAbstract extends CommandEntityAbstract implements ICommandHandler {
+abstract class CommandHandlerAbstract extends CommandEntityAbstract implements ICommandHandler {}
 
-}
-
-abstract class IBasicCommandHandler implements ICommandHandler {
-
-}
+abstract class IBasicCommandHandler implements ICommandHandler {}
 
 /// Basic implementation of command handler. Used internally in library.
 class BasicCommandHandler extends CommandHandlerAbstract implements IBasicCommandHandler {

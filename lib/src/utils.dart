@@ -30,7 +30,7 @@ class CommandMatcher {
   /// Matches [commands] from [messageParts]. Performs recursive lookup on available commands and it's children.
   static ICommandEntity? findMatchingCommand(Iterable<String> messageParts, Iterable<ICommandEntity> commands) {
     for (final entity in commands) {
-      if(entity is CommandGroup && entity.name == "") {
+      if (entity is CommandGroup && entity.name == "") {
         final e = findMatchingCommand(messageParts, entity.commandEntities);
 
         if (e != null) {

@@ -35,12 +35,12 @@ class Commander with CommandRegistrableAbstract {
   /// Allows to specify additional [beforeCommandHandler] executed before main command callback,
   /// and [afterCommandHandler] executed after main command callback.
   Commander(INyxxWebsocket client,
-        {String? prefix,
-        PrefixHandlerFunction? prefixHandler,
-        PassHandlerFunction? beforeCommandHandler,
-        AfterHandlerFunction? afterCommandHandler,
-        LoggerHandlerFunction? loggerHandlerFunction,
-        CommandExecutionError? commandExecutionError}) {
+      {String? prefix,
+      PrefixHandlerFunction? prefixHandler,
+      PassHandlerFunction? beforeCommandHandler,
+      AfterHandlerFunction? afterCommandHandler,
+      LoggerHandlerFunction? loggerHandlerFunction,
+      CommandExecutionError? commandExecutionError}) {
     if (!_hasRequiredIntents(client)) {
       _logger.shout("Commander cannot start without required intents (directMessages, guildMessages, guilds)");
       exit(1);
@@ -81,16 +81,17 @@ class Commander with CommandRegistrableAbstract {
       return;
     }
 
-    if(!event.message.content.startsWith(prefix)) {
+    if (!event.message.content.startsWith(prefix)) {
       return;
     }
 
     _logger.finer("Attempting to execute command from message: [${event.message.content}] from [${event.message.author.tag}]");
 
     // Find matching command with given message content
-    final matchingCommand = CommandMatcher.findMatchingCommand(event.message.content.toLowerCase().replaceFirst(prefix, "").trim().split(" "), commandEntities) as ICommandHandler?;
+    final matchingCommand =
+        CommandMatcher.findMatchingCommand(event.message.content.toLowerCase().replaceFirst(prefix, "").trim().split(" "), commandEntities) as ICommandHandler?;
 
-    if(matchingCommand == null) {
+    if (matchingCommand == null) {
       return;
     }
 
@@ -119,7 +120,7 @@ class Commander with CommandRegistrableAbstract {
     }
 
     // Invoke before handler for commander
-    if(_beforeCommandHandler != null && !(await _beforeCommandHandler!(context))) {
+    if (_beforeCommandHandler != null && !(await _beforeCommandHandler!(context))) {
       return;
     }
 
@@ -127,13 +128,13 @@ class Commander with CommandRegistrableAbstract {
     try {
       await matchingCommand.commandHandler(context, event.message.content);
     } on Exception catch (e) {
-      if(_commandExecutionError != null) {
+      if (_commandExecutionError != null) {
         await _commandExecutionError!(context, e);
       }
 
       _logger.fine("Command [$finalCommand] executed with Exception: $e");
     } on Error catch (e) {
-      if(_commandExecutionError != null) {
+      if (_commandExecutionError != null) {
         await _commandExecutionError!(context, e);
       }
 
@@ -154,30 +155,30 @@ class Commander with CommandRegistrableAbstract {
 
   // Invokes command after handler and its parents
   Future<void> _invokeAfterHandler(ICommandEntity? commandEntity, CommandContext context) async {
-    if(commandEntity == null) {
+    if (commandEntity == null) {
       return;
     }
 
-    if(commandEntity.afterHandler != null) {
+    if (commandEntity.afterHandler != null) {
       await commandEntity.afterHandler!(context);
     }
 
-    if(commandEntity.parent != null) {
+    if (commandEntity.parent != null) {
       await _invokeAfterHandler(commandEntity.parent, context);
     }
   }
 
   // Invokes command before handler and its parents. It will check for next before handlers if top handler returns true.
   Future<bool> _invokeBeforeHandler(ICommandEntity? commandEntity, CommandContext context) async {
-    if(commandEntity == null) {
+    if (commandEntity == null) {
       return true;
     }
 
-    if(commandEntity.beforeHandler == null) {
+    if (commandEntity.beforeHandler == null) {
       return _invokeBeforeHandler(commandEntity.parent, context);
     }
 
-    if(await commandEntity.beforeHandler!(context)) {
+    if (await commandEntity.beforeHandler!(context)) {
       return _invokeBeforeHandler(commandEntity.parent, context);
     }
 
@@ -189,8 +190,8 @@ class Commander with CommandRegistrableAbstract {
   }
 
   bool _hasRequiredIntents(INyxxWebsocket client) =>
-      PermissionsUtils.isApplied(client.intents, GatewayIntents.guildMessages)
-          || PermissionsUtils.isApplied(client.intents, GatewayIntents.directMessages)
-          || PermissionsUtils.isApplied(client.intents, GatewayIntents.guilds)
-          || PermissionsUtils.isApplied(client.intents, GatewayIntents.guilds);
+      PermissionsUtils.isApplied(client.intents, GatewayIntents.guildMessages) ||
+      PermissionsUtils.isApplied(client.intents, GatewayIntents.directMessages) ||
+      PermissionsUtils.isApplied(client.intents, GatewayIntents.guilds) ||
+      PermissionsUtils.isApplied(client.intents, GatewayIntents.guilds);
 }
