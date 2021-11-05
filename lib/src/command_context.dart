@@ -140,7 +140,7 @@ class CommandContext implements ICommandContext {
 
   /// Returns author as guild member
   @override
-  IMember? get member => this.message.member != null
+  IMember? get member => message.member != null
       ? message.member!
       : null;
 
@@ -150,7 +150,7 @@ class CommandContext implements ICommandContext {
 
   /// Shard on which message was sent
   @override
-  int get shardId => this.guild != null ? this.guild!.shard.id : 0;
+  int get shardId => guild != null ? guild!.shard.id : 0;
 
   /// Substring by which command was matched
   @override
@@ -171,7 +171,7 @@ class CommandContext implements ICommandContext {
     }
 
     if (reply) {
-      builder.replyBuilder = ReplyBuilder.fromMessage(this.message);
+      builder.replyBuilder = ReplyBuilder.fromMessage(message);
     }
 
     return channel.sendMessage(builder);
@@ -215,7 +215,7 @@ class CommandContext implements ICommandContext {
   /// Awaits for emoji under given [msg]
   @override
   Future<IEmoji> awaitEmoji(IMessage msg) async =>
-      (await this.client.eventsWs.onMessageReactionAdded.where((event) => event.message == msg).first).emoji;
+      (await client.eventsWs.onMessageReactionAdded.where((event) => event.message == msg).first).emoji;
 
   /// Collects emojis within given [duration]. Returns empty map if no reaction received
   ///
@@ -253,7 +253,7 @@ class CommandContext implements ICommandContext {
   /// Can listen to specific user by specifying [user]
   @override
   Future<ITypingEvent?> waitForTyping(IUser user, {Duration timeout = const Duration(seconds: 30)}) =>
-      Future<ITypingEvent?>(() => client.eventsWs.onTyping.firstWhere((e) => e.user == user && e.channel == this.channel)).timeout(timeout, onTimeout: () => null);
+      Future<ITypingEvent?>(() => client.eventsWs.onTyping.firstWhere((e) => e.user == user && e.channel == channel)).timeout(timeout, onTimeout: () => null);
 
   /// Gets all context channel messages that satisfies [predicate].
   ///
@@ -281,9 +281,9 @@ class CommandContext implements ICommandContext {
   /// Starts typing loop and ends when [callback] resolves.
   @override
   Future<T> enterTypingState<T>(Future<T> Function() callback) async {
-    this.channel.startTypingLoop();
+    channel.startTypingLoop();
     final result = await callback();
-    this.channel.stopTypingLoop();
+    channel.stopTypingLoop();
 
     return result;
   }
@@ -293,7 +293,7 @@ class CommandContext implements ICommandContext {
   /// `List<String> [hi, this, is, example stuff, which, can be parsed]`
   @override
   Iterable<String> getArguments() sync* {
-    final matches = argumentsRegex.allMatches(this.message.content.toLowerCase().replaceFirst(commandMatcher.toLowerCase(), ""));
+    final matches = argumentsRegex.allMatches(message.content.toLowerCase().replaceFirst(commandMatcher.toLowerCase(), ""));
 
     for(final match in matches) {
       final group1 = match.group(1);
@@ -307,7 +307,7 @@ class CommandContext implements ICommandContext {
   /// `List<String> [example stuff, can be parsed]`
   @override
   Iterable<String> getQuotedText() sync* {
-    final matches = quotedTextRegex.allMatches(this.message.content.replaceFirst(commandMatcher, ""));
+    final matches = quotedTextRegex.allMatches(message.content.replaceFirst(commandMatcher, ""));
     for(final match in matches) {
       yield match.group(1)!;
     }

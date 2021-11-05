@@ -57,23 +57,23 @@ class Commander with CommandRegistrableAbstract {
       _prefixHandler = (_) => prefix;
     }
 
-    this._beforeCommandHandler = beforeCommandHandler;
-    this._afterHandlerFunction = afterCommandHandler;
-    this._commandExecutionError = commandExecutionError;
-    this._loggerHandlerFunction = loggerHandlerFunction ?? _defaultLogger;
+    _beforeCommandHandler = beforeCommandHandler;
+    _afterHandlerFunction = afterCommandHandler;
+    _commandExecutionError = commandExecutionError;
+    _loggerHandlerFunction = loggerHandlerFunction ?? _defaultLogger;
 
     client.eventsWs.onMessageReceived.listen(_handleMessage);
 
-    this._logger.info("Commander ready!");
+    _logger.info("Commander ready!");
   }
 
   /// Registers command with given [commandName]. Allows to specify command specific before and after command execution callbacks
   void registerCommand(String commandName, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
-    this.registerCommandEntity(BasicCommandHandler(commandName, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler));
+    registerCommandEntity(BasicCommandHandler(commandName, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler));
   }
 
   /// Registers command as implemented [CommandEntity] class
-  void registerCommandGroup(CommandGroup commandGroup) => this.registerCommandEntity(commandGroup);
+  void registerCommandGroup(CommandGroup commandGroup) => registerCommandEntity(commandGroup);
 
   Future<void> _handleMessage(IMessageReceivedEvent event) async {
     final prefix = await _prefixHandler(event.message);
@@ -85,7 +85,7 @@ class Commander with CommandRegistrableAbstract {
       return;
     }
 
-    this._logger.finer("Attempting to execute command from message: [${event.message.content}] from [${event.message.author.tag}]");
+    _logger.finer("Attempting to execute command from message: [${event.message.content}] from [${event.message.author.tag}]");
 
     // Find matching command with given message content
     final matchingCommand = CommandMatcher.findMatchingCommand(event.message.content.toLowerCase().replaceFirst(prefix, "").trim().split(" "), commandEntities) as ICommandHandler?;
@@ -102,7 +102,7 @@ class Commander with CommandRegistrableAbstract {
     final match = RegExp("(?<finalCommand>${matchingCommand.getFullCommandMatch().trim()})").firstMatch(event.message.content.toLowerCase());
     final finalCommand = match?.namedGroup("finalCommand");
 
-    this._logger.finer("Preparing command for execution: Command name: $finalCommand");
+    _logger.finer("Preparing command for execution: Command name: $finalCommand");
 
     // construct CommandContext
     final context = CommandContext(
@@ -119,7 +119,7 @@ class Commander with CommandRegistrableAbstract {
     }
 
     // Invoke before handler for commander
-    if(this._beforeCommandHandler != null && !(await this._beforeCommandHandler!(context))) {
+    if(_beforeCommandHandler != null && !(await _beforeCommandHandler!(context))) {
       return;
     }
 
@@ -127,28 +127,28 @@ class Commander with CommandRegistrableAbstract {
     try {
       await matchingCommand.commandHandler(context, event.message.content);
     } on Exception catch (e) {
-      if(this._commandExecutionError != null) {
+      if(_commandExecutionError != null) {
         await _commandExecutionError!(context, e);
       }
 
-      this._logger.fine("Command [$finalCommand] executed with Exception: $e");
+      _logger.fine("Command [$finalCommand] executed with Exception: $e");
     } on Error catch (e) {
-      if(this._commandExecutionError != null) {
+      if(_commandExecutionError != null) {
         await _commandExecutionError!(context, e);
       }
 
-      this._logger.fine("Command [$finalCommand] executed with Error: $e");
+      _logger.fine("Command [$finalCommand] executed with Error: $e");
     }
 
     // execute logger callback
-    _loggerHandlerFunction(context, finalCommand!, this._logger);
+    _loggerHandlerFunction(context, finalCommand!, _logger);
 
     // invoke after handler of command
     await _invokeAfterHandler(matchingCommand, context);
 
     // Invoke after handler for commander
-    if (this._afterHandlerFunction != null) {
-      this._afterHandlerFunction!(context);
+    if (_afterHandlerFunction != null) {
+      _afterHandlerFunction!(context);
     }
   }
 

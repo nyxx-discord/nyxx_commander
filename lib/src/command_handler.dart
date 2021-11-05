@@ -15,7 +15,7 @@ abstract class CommandRegistrableAbstract implements ICommandRegistrable {
   /// Registers [CommandEntity] within context of this instance. Throws error if there is command with same name as provided.
   @override
   void registerCommandEntity(ICommandEntity entity) {
-    if (this.commandEntities.any((element) => element.isEntityName(entity.name) )) {
+    if (commandEntities.any((element) => element.isEntityName(entity.name) )) {
       throw Exception("Command name should be unique! There is already command with name: ${entity.name}}");
     }
 
@@ -23,7 +23,7 @@ abstract class CommandRegistrableAbstract implements ICommandRegistrable {
       throw Exception("Command group cannot have aliases if its name is empty! Provided aliases: [${entity.aliases.join(", ")}]");
     }
 
-    this.commandEntities.add(entity);
+    commandEntities.add(entity);
   }
 }
 
@@ -79,7 +79,7 @@ abstract class CommandEntityAbstract implements ICommandEntity {
 
   /// A list of valid command names
   @override
-  List<String> get commandNames => [if (this.name.isNotEmpty) this.name.toLowerCase(), ...aliases.map((e) => e.toLowerCase())];
+  List<String> get commandNames => [if (name.isNotEmpty) name.toLowerCase(), ...aliases.map((e) => e.toLowerCase())];
 
   /// RegEx matching the fully qualified command name with its parents and all aliases
   @override
@@ -90,8 +90,8 @@ abstract class CommandEntityAbstract implements ICommandEntity {
       parentMatch = "${parent!.getFullCommandMatch()} ";
     }
 
-    if (this.commandNames.isNotEmpty) {
-      parentMatch += "(${this.commandNames.join('|')})";
+    if (commandNames.isNotEmpty) {
+      parentMatch += "(${commandNames.join('|')})";
     }
 
     return parentMatch.toLowerCase();
@@ -148,17 +148,17 @@ class CommandGroup extends CommandEntityAbstract with CommandRegistrableAbstract
   /// Registers default command handler which will be executed if no subcommand is matched to message content
   void registerDefaultCommand(CommandHandlerFunction commandHandler,
       {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
-    this.defaultHandler = BasicCommandHandler("", commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this);
+    defaultHandler = BasicCommandHandler("", commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this);
   }
 
   /// Registers subcommand
   void registerSubCommand(String name, CommandHandlerFunction commandHandler,
       {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
-    this.registerCommandEntity(BasicCommandHandler(name, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this));
+    registerCommandEntity(BasicCommandHandler(name, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this));
   }
 
   /// Registers command as implemented [CommandEntityAbstract] class
-  void registerCommandGroup(CommandGroup commandGroup) => this.registerCommandEntity(commandGroup..parent = this);
+  void registerCommandGroup(CommandGroup commandGroup) => registerCommandEntity(commandGroup..parent = this);
 }
 
 abstract class ICommandHandler implements ICommandEntity {
