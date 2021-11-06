@@ -35,26 +35,14 @@ class Commander with CommandRegistrableAbstract {
   /// Allows to specify additional [beforeCommandHandler] executed before main command callback,
   /// and [afterCommandHandler] executed after main command callback.
   Commander(INyxxWebsocket client,
-      {String? prefix,
-      PrefixHandlerFunction? prefixHandler,
-      PassHandlerFunction? beforeCommandHandler,
+      this._prefixHandler,
+      {PassHandlerFunction? beforeCommandHandler,
       AfterHandlerFunction? afterCommandHandler,
       LoggerHandlerFunction? loggerHandlerFunction,
       CommandExecutionError? commandExecutionError}) {
     if (!_hasRequiredIntents(client)) {
       _logger.shout("Commander cannot start without required intents (directMessages, guildMessages, guilds)");
       exit(1);
-    }
-
-    if (prefix == null && prefixHandler == null) {
-      _logger.shout("Commander cannot start without both prefix and prefixHandler");
-      exit(1);
-    }
-
-    if (prefix == null) {
-      _prefixHandler = prefixHandler!;
-    } else {
-      _prefixHandler = (_) => prefix;
     }
 
     _beforeCommandHandler = beforeCommandHandler;

@@ -26,6 +26,17 @@ typedef LoggerHandlerFunction = FutureOr<void> Function(ICommandContext context,
 /// Callback called when command executions returns with [Exception] or [Error] ([exception] variable could be either).
 typedef CommandExecutionError = FutureOr<void> Function(ICommandContext context, dynamic exception);
 
+String? mentionPrefixHandler(IMessage message) {
+  final mentionPrefixRegex = RegExp('<@(!?)(${message.client.appId})>');
+
+  final matches = mentionPrefixRegex.firstMatch(message.content);
+  if (matches != null) {
+    return matches.group(0);
+  }
+
+  return null;
+}
+
 class CommandMatcher {
   /// Matches [commands] from [messageParts]. Performs recursive lookup on available commands and it's children.
   static ICommandEntity? findMatchingCommand(Iterable<String> messageParts, Iterable<ICommandEntity> commands) {
