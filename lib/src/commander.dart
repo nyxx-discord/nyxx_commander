@@ -56,11 +56,11 @@ class Commander with CommandRegistrableAbstract {
 
   /// Registers command with given [commandName]. Allows to specify command specific before and after command execution callbacks
   void registerCommand(String commandName, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
-    registerCommandEntity(BasicCommandHandler(commandName, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler));
+    registerCommandEntity(CommandHandler(commandName, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler));
   }
 
   /// Registers command as implemented [CommandEntity] class
-  void registerCommandGroup(CommandGroup commandGroup) => registerCommandEntity(commandGroup);
+  void registerCommandGroup(BasicCommandGroup commandGroup) => registerCommandEntity(commandGroup);
 
   Future<void> _handleMessage(IMessageReceivedEvent event) async {
     final prefix = await _prefixHandler(event.message);

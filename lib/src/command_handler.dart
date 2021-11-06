@@ -54,7 +54,7 @@ abstract class ICommandEntity {
   bool isEntityName(String str);
 }
 
-/// Base object for [CommandHandlerAbstract] and [CommandGroup]
+/// Base object for [CommandHandlerAbstract] and [BasicCommandGroup]
 abstract class CommandEntityAbstract implements ICommandEntity {
   /// Executed before executing command.
   /// Used to check if command can be executed in current context.
@@ -103,7 +103,7 @@ abstract class CommandEntityAbstract implements ICommandEntity {
 }
 
 abstract class ICommandGroup implements ICommandEntity, ICommandRegistrable {
-  /// Default [CommandHandlerAbstract] for [CommandGroup] - it will be executed then no other command from group match
+  /// Default [CommandHandlerAbstract] for [BasicCommandGroup] - it will be executed then no other command from group match
   CommandHandlerAbstract? get defaultHandler;
 
   /// Registers default command handler which will be executed if no subcommand is matched to message content
@@ -113,13 +113,13 @@ abstract class ICommandGroup implements ICommandEntity, ICommandRegistrable {
   void registerSubCommand(String name, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler});
 
   /// Registers command as implemented [CommandEntityAbstract] class
-  void registerCommandGroup(CommandGroup commandGroup);
+  void registerCommandGroup(BasicCommandGroup commandGroup);
 }
 
 /// Creates command group. Pass a [name] to crated command and commands added
 /// via [registerSubCommand] will be subcommands og that group
 // ignore: prefer_mixin
-class CommandGroup extends CommandEntityAbstract with CommandRegistrableAbstract {
+class BasicCommandGroup extends CommandEntityAbstract with CommandRegistrableAbstract {
   @override
   final List<ICommandEntity> commandEntities = [];
 
@@ -129,7 +129,7 @@ class CommandGroup extends CommandEntityAbstract with CommandRegistrableAbstract
   @override
   final AfterHandlerFunction? afterHandler;
 
-  /// Default [CommandHandlerAbstract] for [CommandGroup] - it will be executed then no other command from group match
+  /// Default [CommandHandlerAbstract] for [BasicCommandGroup] - it will be executed then no other command from group match
   CommandHandlerAbstract? defaultHandler;
 
   @override
@@ -139,24 +139,30 @@ class CommandGroup extends CommandEntityAbstract with CommandRegistrableAbstract
   final List<String> aliases;
 
   @override
-  CommandGroup? parent;
+  BasicCommandGroup? parent;
 
   /// Creates command group. Pass a [name] to crated command and commands added
   /// via [registerSubCommand] will be subcommands og that group
-  CommandGroup({this.name = "", this.aliases = const [], this.defaultHandler, this.beforeHandler, this.afterHandler, this.parent});
+  BasicCommandGroup({this.name = "", this.aliases = const [], this.defaultHandler, this.beforeHandler, this.afterHandler, this.parent});
 
   /// Registers default command handler which will be executed if no subcommand is matched to message content
   void registerDefaultCommand(CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
-    defaultHandler = BasicCommandHandler("", commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this);
+    defaultHandler = CommandHandler("", commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this);
   }
 
   /// Registers subcommand
   void registerSubCommand(String name, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
-    registerCommandEntity(BasicCommandHandler(name, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this));
+    registerCommandEntity(CommandHandler(name, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: this));
   }
 
   /// Registers command as implemented [CommandEntityAbstract] class
-  void registerCommandGroup(CommandGroup commandGroup) => registerCommandEntity(commandGroup..parent = this);
+  void registerCommandGroup(BasicCommandGroup commandGroup) => registerCommandEntity(commandGroup..parent = this);
+}
+
+class CommandGroup extends BasicCommandGroup {
+  /// Creates command group. Pass a [name] to crated command and commands added
+  /// via [registerSubCommand] will be subcommands og that group
+  CommandGroup({String name = "", List<String> aliases = const [], CommandHandlerAbstract? defaultHandler, PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler, CommandGroup? parent});
 }
 
 abstract class ICommandHandler implements ICommandEntity {
@@ -172,7 +178,7 @@ abstract class CommandHandlerAbstract extends CommandEntityAbstract implements I
 abstract class IBasicCommandHandler implements ICommandHandler {}
 
 /// Basic implementation of command handler. Used internally in library.
-class BasicCommandHandler extends CommandHandlerAbstract implements IBasicCommandHandler {
+class CommandHandler extends CommandHandlerAbstract implements IBasicCommandHandler {
   @override
   final PassHandlerFunction? beforeHandler;
 
@@ -189,8 +195,8 @@ class BasicCommandHandler extends CommandHandlerAbstract implements IBasicComman
   final List<String> aliases;
 
   @override
-  CommandGroup? parent;
+  BasicCommandGroup? parent;
 
   /// Basic implementation of command handler. Used internally in library.
-  BasicCommandHandler(this.name, this.commandHandler, {this.aliases = const [], this.beforeHandler, this.afterHandler, this.parent});
+  CommandHandler(this.name, this.commandHandler, {this.aliases = const [], this.beforeHandler, this.afterHandler, this.parent});
 }
