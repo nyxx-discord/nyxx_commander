@@ -26,7 +26,7 @@ main() {
       final messageWithMention = MessageMock('!some-other-stuff this is example command');
 
       final result = mentionPrefixHandler(messageWithMention);
-      expect(result, isNotNull);
+      expect(result, isNull);
     });
 
     test('invalid message invalid app id', () {
