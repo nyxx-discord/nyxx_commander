@@ -162,7 +162,13 @@ class BasicCommandGroup extends CommandEntityAbstract with CommandRegistrableAbs
 class CommandGroup extends BasicCommandGroup {
   /// Creates command group. Pass a [name] to crated command and commands added
   /// via [registerSubCommand] will be subcommands og that group
-  CommandGroup({String name = "", List<String> aliases = const [], CommandHandlerAbstract? defaultHandler, PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler, CommandGroup? parent});
+  CommandGroup(
+      {String name = "",
+      List<String> aliases = const [],
+      CommandHandlerAbstract? defaultHandler,
+      PassHandlerFunction? beforeHandler,
+      AfterHandlerFunction? afterHandler,
+      CommandGroup? parent});
 }
 
 abstract class ICommandHandler implements ICommandEntity {
