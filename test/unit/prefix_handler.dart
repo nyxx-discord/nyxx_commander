@@ -33,7 +33,7 @@ main() {
       final messageWithMention = MessageMock('<@!321> this is example command');
 
       final result = mentionPrefixHandler(messageWithMention);
-      expect(result, isNotNull);
+      expect(result, isNull);
     });
   });
 }
