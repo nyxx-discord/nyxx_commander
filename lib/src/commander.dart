@@ -34,8 +34,7 @@ class Commander with CommandRegistrableAbstract {
   /// Either [prefix] or [prefixHandler] must be specified otherwise program will exit.
   /// Allows to specify additional [beforeCommandHandler] executed before main command callback,
   /// and [afterCommandHandler] executed after main command callback.
-  Commander(INyxxWebsocket client,
-      this._prefixHandler,
+  Commander(INyxxWebsocket client, this._prefixHandler,
       {PassHandlerFunction? beforeCommandHandler,
       AfterHandlerFunction? afterCommandHandler,
       LoggerHandlerFunction? loggerHandlerFunction,
