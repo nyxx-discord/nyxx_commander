@@ -168,7 +168,8 @@ class CommandGroup extends BasicCommandGroup {
       CommandHandlerAbstract? defaultHandler,
       PassHandlerFunction? beforeHandler,
       AfterHandlerFunction? afterHandler,
-      CommandGroup? parent});
+      CommandGroup? parent})
+      : super(name: name, aliases: aliases, defaultHandler: defaultHandler, beforeHandler: beforeHandler, afterHandler: afterHandler, parent: parent);
 }
 
 abstract class ICommandHandler implements ICommandEntity {
