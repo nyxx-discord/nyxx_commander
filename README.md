@@ -1,7 +1,7 @@
 # nyxx_commander
 
 [![Discord Shield](https://discordapp.com/api/guilds/846136758470443069/widget.png?style=shield)](https://discord.gg/nyxx)
-[![pub](https://img.shields.io/pub/v/nyxx.svg)](https://pub.dartlang.org/packages/nyxx_commander)
+[![pub](https://img.shields.io/pub/v/nyxx_commander.svg)](https://pub.dartlang.org/packages/nyxx_commander)
 [![documentation](https://img.shields.io/badge/Documentation-nyxx_interactions-yellow.svg)](https://www.dartdocs.org/documentation/nyxx_commander/latest/)
 
 Simple, robust framework for creating discord bots for Dart language.
