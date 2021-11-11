@@ -8,6 +8,29 @@ import 'package:nyxx_commander/src/command_handler.dart';
 import 'package:nyxx_commander/src/command_context.dart';
 import 'package:nyxx_commander/src/utils.dart';
 
+abstract class ICommander implements CommandRegistrableAbstract {
+  /// Resolves prefix for given [message]. Returns null if there is no prefix for given [message] which
+  /// means command wouldn't execute in given context.
+  FutureOr<String?> getPrefixForMessage(IMessage message);
+
+  /// Registers command with given [commandName]. Allows to specify command specific before and after command execution callbacks
+  void registerCommand(String commandName, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler});
+
+  /// Registers command as implemented [CommandEntity] class
+  void registerCommandGroup(BasicCommandGroup commandGroup);
+
+  static ICommander create(INyxxWebsocket client, PrefixHandlerFunction prefixHandler,
+          {PassHandlerFunction? beforeCommandHandler,
+          AfterHandlerFunction? afterCommandHandler,
+          LoggerHandlerFunction? loggerHandlerFunction,
+          CommandExecutionError? commandExecutionError}) =>
+      Commander(client, prefixHandler,
+          beforeCommandHandler: beforeCommandHandler,
+          afterCommandHandler: afterCommandHandler,
+          loggerHandlerFunction: loggerHandlerFunction,
+          commandExecutionError: commandExecutionError);
+}
+
 /// Lightweight command framework. Doesn't use `dart:mirrors` and can be used in browser.
 /// While constructing specify prefix which is string with prefix or
 /// implement [PrefixHandlerFunction] for more fine control over where and in what conditions commands are executed.
@@ -15,7 +38,7 @@ import 'package:nyxx_commander/src/utils.dart';
 /// Allows to specify callbacks which are executed before and after command - also on per command basis.
 /// beforeCommandHandler callbacks are executed only command exists and is matched with message content.
 // ignore: prefer_mixin
-class Commander with CommandRegistrableAbstract {
+class Commander extends CommandRegistrableAbstract implements ICommander {
   late final PrefixHandlerFunction _prefixHandler;
   late final PassHandlerFunction? _beforeCommandHandler;
   late final AfterHandlerFunction? _afterHandlerFunction;
@@ -26,10 +49,6 @@ class Commander with CommandRegistrableAbstract {
   final List<ICommandEntity> commandEntities = [];
 
   final Logger _logger = Logger("Commander");
-
-  /// Resolves prefix for given [message]. Returns null if there is no prefix for given [message] which
-  /// means command wouldn't execute in given context.
-  FutureOr<String?> getPrefixForMessage(IMessage message) => _prefixHandler(message);
 
   /// Either [prefix] or [prefixHandler] must be specified otherwise program will exit.
   /// Allows to specify additional [beforeCommandHandler] executed before main command callback,
@@ -53,6 +72,10 @@ class Commander with CommandRegistrableAbstract {
 
     _logger.info("Commander ready!");
   }
+
+  /// Resolves prefix for given [message]. Returns null if there is no prefix for given [message] which
+  /// means command wouldn't execute in given context.
+  FutureOr<String?> getPrefixForMessage(IMessage message) => _prefixHandler(message);
 
   /// Registers command with given [commandName]. Allows to specify command specific before and after command execution callbacks
   void registerCommand(String commandName, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {

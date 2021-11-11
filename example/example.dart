@@ -6,7 +6,7 @@ void main() {
   final bot = NyxxFactory.createNyxxWebsocket("TOKEN", GatewayIntents.allUnprivileged);
 
   // Start commander with prefix `!`
-  Commander(bot, mentionPrefixHandler)
+  ICommander.create(bot, mentionPrefixHandler)
     .registerCommand("ping", (context, message) { // register command ping that will answer pong
       context.reply(MessageBuilder.content("Pong"));
     });
