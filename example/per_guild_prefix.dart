@@ -22,7 +22,11 @@ FutureOr<String?> prefixHandler(IMessage message) {
 
 void main() {
   // Start bot
-  final bot = NyxxFactory.createNyxxWebsocket("TOKEN", GatewayIntents.allUnprivileged);
+  final bot = NyxxFactory.createNyxxWebsocket("<TOKEN>", GatewayIntents.allUnprivileged)
+    ..registerPlugin(Logging()) // Default logging plugin
+    ..registerPlugin(CliIntegration()) // Cli integration for nyxx allows stopping application via SIGTERM and SIGKILl
+    ..registerPlugin(IgnoreExceptions()) // Plugin that handles uncaught exceptions that may occur
+    ..connect();
 
   // Start commander with prefix `!`
   ICommander.create(bot, prefixHandler) // prefixHandler will handle deciding which guild can use which prefix
