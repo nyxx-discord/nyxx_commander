@@ -75,14 +75,17 @@ class Commander extends CommandRegistrableAbstract implements ICommander {
 
   /// Resolves prefix for given [message]. Returns null if there is no prefix for given [message] which
   /// means command wouldn't execute in given context.
+  @override
   FutureOr<String?> getPrefixForMessage(IMessage message) => _prefixHandler(message);
 
   /// Registers command with given [commandName]. Allows to specify command specific before and after command execution callbacks
+  @override
   void registerCommand(String commandName, CommandHandlerFunction commandHandler, {PassHandlerFunction? beforeHandler, AfterHandlerFunction? afterHandler}) {
     registerCommandEntity(CommandHandler(commandName, commandHandler, beforeHandler: beforeHandler, afterHandler: afterHandler));
   }
 
   /// Registers command as implemented [CommandEntity] class
+  @override
   void registerCommandGroup(BasicCommandGroup commandGroup) => registerCommandEntity(commandGroup);
 
   Future<void> _handleMessage(IMessageReceivedEvent event) async {
