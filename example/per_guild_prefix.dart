@@ -1,7 +1,7 @@
 import "dart:async";
 
 import "package:nyxx/nyxx.dart";
-import "package:nyxx_commander/commander.dart";
+import "package:nyxx_commander/nyxx_commander.dart";
 
 // Temporary storage for prefixes per guild
 // Note that this implementation is just proof of concept
@@ -10,24 +10,26 @@ final prefixes = <Snowflake, String>{};
 
 const defaultPrefix = "!";
 
-FutureOr<String?> prefixHandler(Message message) {
+FutureOr<String?> prefixHandler(IMessage message) {
   // Check if we are in DMs, if true then return default prefix
-  if (message is DMMessage) {
+  if (message.guild == null) {
     return defaultPrefix;
   }
 
-  final guildMessage = message as GuildMessage; // case message to GuildMessage since we are sure we are not in DMs
-  final prefixForGuild = prefixes[guildMessage.guild.id]; // Get prefix for guild id. Will return null if not present
-
+  final prefixForGuild = prefixes[message.guild!.id]; // Get prefix for guild id. Will return null if not present
   return prefixForGuild ?? defaultPrefix; // return prefix for guild if not null or default prefix otherwise
 }
 
 void main() {
   // Start bot
-  final bot = Nyxx("TOKEN", GatewayIntents.allUnprivileged);
+  final bot = NyxxFactory.createNyxxWebsocket("<TOKEN>", GatewayIntents.allUnprivileged)
+    ..registerPlugin(Logging()) // Default logging plugin
+    ..registerPlugin(CliIntegration()) // Cli integration for nyxx allows stopping application via SIGTERM and SIGKILl
+    ..registerPlugin(IgnoreExceptions()) // Plugin that handles uncaught exceptions that may occur
+    ..connect();
 
   // Start commander with prefix `!`
-  Commander(bot, prefixHandler: prefixHandler) // prefixHandler will handle deciding which guild can use which prefix
+  ICommander.create(bot, prefixHandler) // prefixHandler will handle deciding which guild can use which prefix
     ..registerCommand("ping", (context, message) { // register command ping that will answer pong
       context.reply(MessageBuilder.content("Pong"));
     })
