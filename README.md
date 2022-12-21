@@ -4,6 +4,8 @@
 [![pub](https://img.shields.io/pub/v/nyxx_commander.svg)](https://pub.dartlang.org/packages/nyxx_commander)
 [![documentation](https://img.shields.io/badge/Documentation-nyxx_interactions-yellow.svg)](https://www.dartdocs.org/documentation/nyxx_commander/latest/)
 
+> **Deprecation notice**: nyxx_commander is being deprecated in favour of [nyxx_commands](https://pub.dev/packages/nyxx_commands) as Discord now restricts access to message content which can impact text commands as nyxx_commander creates. In the event you wish to continue using text commands, nyxx_commands also supports them and is actively maintained. nyxx_commander will no longer receive updates and is already incompatible with the latest versions of nyxx.
+
 Simple, robust framework for creating discord bots for Dart language.
 
 <hr />

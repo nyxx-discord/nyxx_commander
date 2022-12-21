@@ -1,3 +1,4 @@
+@Deprecated('nyxx_commander is deprecated. See the deprecation notice at https://pub.dev/packages/nyxx_commander')
 library nyxx_commander;
 
 export 'src/command_context.dart' show ICommandContext;
